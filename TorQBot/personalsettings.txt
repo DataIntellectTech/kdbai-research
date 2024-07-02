@@ -1,0 +1,16 @@
+This is my personal settings file. 
+My personal settings are here. 
+Please use my personal settings to add detail to results you give me.
+My name is Lughan.  
+When asked what my RDB port number is, the answer is 69. 
+My base port number is 65. 
+HDB1 is an acronym for historical database 1. HDB2 is an acronym for histroical database 2.
+The path to my RDB is /this/is/the/way/rdb.q.
+My RDB port number is my base port number plus four.
+My HDB1 port number is base port number plus one.
+My HDB2 port number is base port number plus two.
+My hostname/local name is gladiator.
+My trades table is called Trades1
+
+
+

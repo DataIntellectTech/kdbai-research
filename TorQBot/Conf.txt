@@ -1,0 +1,551 @@
+Learning Intentions
+By the end of this unit, you should be able to:
+
+Install and start up TorQ 
+
+Connect and query a TorQ process 
+
+Be able to read and understand log files for debugging purposes (.err and .log)
+
+Understand the file structure and format of TorQ TP log files and the associated functions/commands on how to replay them if required 
+
+Know the location and be able to understand the on-disk file structure of the tables 
+
+This guide will show how to install TorQ using both an Install Script and Cloning from GitHub. Generally for developing cloning is preferred, however the install script is quicker and simpler to set up.
+
+Installing TorQ with the Install Script
+The easiest way to get started with TorQ is using the Install Script. This will download the TorQ framework as well as the TorQ Finance Starter Pack, an example market data capture system which randomly generates financial data.
+
+First, download the install script in the directory where you want TorQ to be installed using:
+
+
+
+wget https://raw.githubusercontent.com/AquaQAnalytics/TorQ-Finance-Starter-Pack/master/installlatest.sh
+and run using:
+
+
+
+bash installlatest.sh
+The directory will now look like
+
+Open directory.PNG
+directory.PNG
+ 
+
+Change to the deploy directory
+
+
+
+cd deploy
+Before we can start a TorQ process we need to modify the process.csv and setenv.sh files.
+
+Open the process.csv file in the vim editor
+
+
+
+vim TorQApp/latest/appconfig/process.csv
+and remove the values q from the QCMD column. Save and exit.
+
+Open the setenv.sh file in the vim editor
+
+
+
+vim bin/setenv.sh
+We need to change the baseport to an unused value (<~50 000). If a process is already running on one of our port values, our process will not be able to start or we may connect to someone else’s process. 
+
+We also add the line
+
+
+
+export QCMD="taskset -c 0,1 q"
+This is to restrict the number of cores our TorQ stack is able to use on Homer’s cpu as the KDB+ license is for fewer cores than the total number Homer has.
+
+Open setenv.PNG
+setenv.PNG
+Finally, to enable us to take qcon as an argument for the torq.sh script later, we change the line
+
+
+
+export QCON="qcon"
+To the filepath to the qcon file on the server. We can check this using
+
+
+
+alias qcon
+or on Homer this will be
+
+
+
+export QCON="/opt/kdb/qcon"
+Save, exit, and source the modified setenv.sh file using
+
+
+
+source bin/setenv.sh
+Running TorQ
+We can now start our TorQ stack using the torq.sh script in the bin directory. There is also a torq.sh script located in the directory TorQ/latest/, however when first running the torq.sh script it will load the setenv.sh script from the directory where torq.sh is located. We want to use the setenv.sh script from the bin directory as it is correctly set up to use the TorQ Finance Starter Pack.
+
+
+
+bash bin/torq.sh start all
+The torq.sh script can take the arguments start, stop, debug and summary. Note that the directory changes to TorQ/latest/; because environment variables are now correctly defined we can use the torq.sh script in our current directory.
+
+Start can be used to start a TorQ process, start multiple TorQ processes, or start all TorQ processes.
+
+
+
+bash torq.sh start [process_name]
+bash torq.sh start [process_name_1] [process_name_2] [process_name_3]
+bash torq.sh start all
+Stop can be used to stop a torq process, stop multiple torq processes, or stop all torq processes. Remember to always stop all TorQ processes before logging out or they will continue to run.
+
+
+
+bash torq.sh stop [process_name]
+bash torq.sh stop [process_name_1] [process_name_2] [process_name_3]
+bash torq.sh stop all
+Debug is used to debug a torq process. It will display logging data for that process on start up and the user will be put into that q process if it starts successfully, otherwise it will display an error message and exit.
+
+
+
+bash torq.sh debug [process_name]
+Summary is used to get information about the processes. It displays the process name, whether the process is currently running, the process ID and the port number.
+
+
+
+bash torq.sh summary
+Open torq_summary.PNG
+torq_summary.PNG
+Qcon can be used to connect to a currently running process using the port number. To connect to any TorQ process we also need a username and password, which by default are set to admin:admin
+
+
+
+qcon :[port_number]:[username]:[password]
+Open qcon.PNG
+qcon.PNG
+We can also connect to a running process using qcon as an argument in the torq.sh script.
+
+
+
+bash bin/torq.sh qcon [process_name] [username]:[password]
+Installing TorQ using Git Clone
+Although using the script method is often easier, installing TorQ using Git Clone is recommended when doing any development work.
+
+Start by using git clone to copy the TorQ and TorQ Finance Starter Pack repositories from GitHub. The TorQ Finance Starter Pack is an example market data capture system which randomly generates financial data.
+
+
+
+git clone https://github.com/AquaQAnalytics/TorQ.git
+git clone https://github.com/AquaQAnalytics/TorQ-Finance-Starter-Pack.git
+You will also need to create a data directory so that processes can persist data to disk. The -p flag creates intermediate directories so we don’t have to do this manually.
+
+
+
+mkdir -p datatemp/logs
+mkdir -p datatemp/hdb
+mkdir -p datatemp/dqe/dqcb/database
+mkdir -p datatemp/dqe/dqedb/database
+Create a bin directory and copy the setenv.sh and torq.sh scripts from the TorQ and TorQ-Finance-Starter-Pack directories into the new directory
+
+
+
+mkdir bin
+cp TorQ-Finance-Starter-Pack/setenv.sh bin/setenv.sh
+cp TorQ/torq.sh bin/torq.sh
+If you update TorQ later you may need to ensure the torq.sh script in the bin directory also stays up to date. After pulling in changes from the Git repo into the TorQ directory, you can simply run the command cp TorQ/torq.sh bin/torq.sh again. Alternatively, you could create a softlink to the torq.sh script using the command ln -s -r TorQ/torq.sh bin/torq.sh.
+
+We will need to change the base port to an unused value and add the line export QCMD="taskset -c 0,1 q" as shown in the section above, however we will also need to make some changes to the filepaths. Instead of changing the filepaths we could copy the contents of the TorQ and TorQ-Finance-Starter-Pack directories into a single directory, however it is preferable to keep these seperate to avoid confusion about which files belong to which git repository.
+
+Change the lines in the setenv.sh file
+
+
+
+export TORQHOME=${dirpath}
+export TORQAPPHOME=${TORQHOME}
+export TORQDATAHOME=${TORQHOME}
+to the filepaths for your TorQ, TorQ-Finance-Starter-Pack and datatemp directories.
+
+Open image-20230224-105533.png
+image-20230224-105533.png
+ 
+
+Once these changes have been made, you can source the setenv.sh script
+
+
+
+source bin/setenv.sh
+Finally we modify the file TorQ-Finance-Starter-Pack/appconfig/process.csv to remove the q values from the last column, qcmd.
+
+Running TorQ
+We can now start our TorQ stack using the torq.sh script
+
+
+
+bash bin/torq.sh start all
+The torq.sh script can take the arguments start, stop, debug and summary, as shown in the section above. You can connect to a currently running q process using the qcon command, also shown in the section above.
+
+TorQ Logs
+If TorQ is installed using the script method, log files will be kept in the directory datatemp/logs/. When a process is started it will generate three logfiles with timestamps; err, out and usage, and three softlinks which link to the latest logfile.
+
+Open rdb_logs_dir.PNG
+rdb_logs_dir.PNG
+ 
+
+Err logs contain all of the error messages a process has generated.
+
+Out logs contain debug information, such as when a process is loading a file or connecting to another process.
+
+Usage logs contain everything a process does, including every request a client makes.
+
+Tickerplant Logs
+The tickerplant logs are located in the directory datatemp/tplogs. They are partitioned by date. Inside each date partition there are binary files containing the update messages the segmented tickerplant has received for each table.
+
+Open image-20230213-140548.png
+image-20230213-140548.png
+These logs can be replayed using the tickerplant log replay process. This is useful for handling end of day savedown failures and handling very large volumes of data which cannot fit into RAM.
+
+The process can take either an individual log file or a directory containing a set of log files. It can
+
+replay specific message ranges
+
+replay in more manageable message chunks
+
+recover as many messages as possible from the logfile, not just stop at the first bad message
+
+ignore specific tables
+
+modify tables before or after they are saved
+
+apply sorting and parting
+
+If you attempt to start this process without setting some variables (tickerplant log file, schema file and on-disk database directory to write to) it will fail on startup. These can be set in a config file or on the command line
+
+
+
+q torq.q -debug -load code/processes/tickerlogreplay.q -p [portnumber] -.replay.tplogdir [tickerplant log file or directory] -.replay.schemafile [file defining table schema] -.replay.hdbdir [database directory to write to] -proctype tickerlogreplay -procname tplogreplay1
+To demonstrate this, begin by starting a TorQ stack normally. Create an empty test directory to use as the hdb directory. Run the above command with one of the tplog directories found in datatemp/tplogs and the schema file ${TORQAPPHOME}/database.q, which is the same schema file the tickerplant automatically uses on startup. You will find that the test directory is now populated with historical data.
+
+
+
+mkdir ../../../data/testdir
+q torq.q -debug -load code/processes/tickerlogreplay.q -p 52810 -.replay.tplogdir ../../../data/tplogs/stp1_2023.02.13 -.replay.schemafile ${TORQAPPHOME}/database.q -.replay.hdbdir ../../../data/testdir -proctype tickerlogreplay -procname tplogreplay1
+tree -L 2 ../../../data/testdir
+Open image-20230213-150057.png
+image-20230213-150057.png
+Open image-20230213-150204.png
+image-20230213-150204.png
+Alternatively the variables .replay.tplogfile, .replay.schemafile and .replay.hdbdir can be set in the extras column for the process tpreplay1 in the process.csv file and the log replay can then be started using
+
+
+
+. torq.sh debug tpreplay1
+Open image-20230213-151314.png
+image-20230213-151314.png
+HDB
+The hdb directory is where historical data is saved to disk. Tables are partitioned by date, meaning data for each day is stored in a seperate directory. They are also splayed, meaning each column in the table is saved to a seperate file.
+
+Each date directory will have identically named tables with identical columns and an identical .d file giving the column order. This is because all the date directories contain portions of the same tables and therefor they have identical schema.
+
+The hdb directory is located in datatemp/hdb/
+
+Open hdb_structure.PNG
+hdb_structure.PNG
+Exploring TorQ Files
+TorQ/latest/code/
+Contains code for all TorQ processes which is loaded on startup. The processes directory contains a q script for each process, additional functions are loaded in other directories by each process, common directory defines functions which are used by every process.
+
+TorQ/latest/docs/
+Contains documentation for TorQ, describing some of the functionality TorQ provides and how to use TorQ.
+
+TorQApp/latest/appconfig/
+Contains config files for the TorQ Finance Starter Pack, including process.csv where additional processes can be defined (for example, if you wanted to add another rdb) or settings can be changed for the processes.
+
+Settings can also be defined for each process in the settings directory. This contains config files as q scripts for each of the TorQ processes, in addition to a default.q file which is applied to all TorQ processes. If you are adding functionality to a TorQ process it may be helpful to define some settings here, or if you are adding a process to TorQ you may want to add a new settings script for that process. 
+
+Passwords are stored in the passwords directory. This contains all the passwords the TorQ processes use to connect to other TorQ processes, as well as the password you will use to connect to a TorQ process.
+
+data/logs/
+Log files for all the TorQ processes.
+
+data/hdb/
+Historical data saved to disk at the end of each day.
+
+data/tplogs/
+Tickerplant log files for each day.
+
+
+Writing a Real Time Subscriber
+This section covers the writing of a real-time subscriber(RTS) process to meet a business user's requirements. It is split into two parts; the first is a step-by-step tutorial in setting up a subscriber which meets the requirements specified, while the second is a video of a demonstration, narrated by Jonny Press, which will cover the same principles in setting up a subscriber with the same specifications as found in the tutorial.
+
+The subscriber in question is required to use quote data to calculate the average bid by second and sym, where the sym is in the following list:
+
+AUDUSD
+
+USDCAD
+
+USDCHF
+
+EURUSD
+
+GBPUSD
+
+USDJPY
+
+USDMXN
+
+EURNOK
+
+NZDUSD
+
+USDUSD
+
+The supporting script, subscriber.q can be found here.
+
+Starting a TorQ Stack and Dummy Feed
+To provide us with data to subscribe to for our RTS, we will be using a TorQ setup with a dummy feed from the TorQ Finance-Starter-Pack, then subscribing to this for the quote data. The steps for setting this up are listed below:
+
+Make a temporary directory on homer, we can call this tmp. Move to this directory.
+
+
+
+smcginn@homer:~$ mkdir tmp smcginn@homer:~$ cd tmp 
+Clone the TorQ and TorQ-Finance-Starter-Pack from the AquaQ github.
+
+ 
+
+
+
+smcginn@homer:~/tmp$ git clone
+https://github.com/AquaQAnalytics/TorQ.git
+Cloning into 'TorQ'...  
+remote: Counting objects: 3052, done.  
+remote: Compressing objects: 100% (26/26), done.
+remote: Total 3052 (delta 16), reused 24 (delta 10), pack-reused 3016 
+Receiving objects: 100% (3052/3052), 13.22 MiB | 3.64 MiB/s, done.  
+Resolving deltas: 100% (1920/1920), done.  
+Checking connectivity... done.  
+
+
+smcginn@homer:~/tmp$ git clone https://github.com/AquaQAnalytics/TorQ-Finance-Starter-Pack.git
+Cloning into 'TorQ-Finance-Starter-Pack'...  
+remote: Counting objects: 811, done.
+remote: Total 811 (delta 0), reused 0 (delta 0), pack-reused 811 
+Receiving object: 100% (811/811), 30.04 MiB | 6.40 MiB/s, done.  
+Resolving deltas: 100% (400/400),done.  
+Checking connectivity... done.  
+ 
+
+This should leave us with the new tmp folder and the two repositories inside, as shown below:
+
+
+
+smcginn@homer:~/tmp$ ls 
+TorQ  TorQ-Finance-Starter-Pack
+We then need to make a deploy folder containing the TorQ repository, with the Finance-Starter-Pack copied over the top of it. This can be done with the commands shown below; we can also confirm that the files have copied correctly:
+
+
+
+smcginn@homer:~/tmp$ mkdir deploy 
+smcginn@homer:~/tmp$ cp -r TorQ/* deploy/ 
+smcginn@homer:~/tmp$ cp -r TorQ-Finance-Starter-Pack/* deploy/
+smcginn@homer:~/tmp$ ls deploy/ 
+appconfig   database.q          lib
+README.md   start_torq_demo.sh  torq.q aquaq-torq-brochure.pdf  docs
+LICENSE     setenv.sh           stop_torq_demo.bat              torq.sh code
+hdb         logs                start_torq_demo.bat             stop_torq_demo.sh config
+html        mkdocs.yml          start_torq_demo_osx.sh          tests 
+We are now able to start up a TorQ stack, but before doing so, we need to change the baseport used by TorQ, defined in the setenv.sh script, away from the default port number. This is to ensure the stack that is started does not clash with any other active stacks currently running on homer.
+
+To do this, open the setenv.sh script and edit the line shown below. Any baseport can be chosen that does not clash with any other active stacks. For the sake of this example, the baseport 2112 will be used:
+
+
+
+# set KDBBASEPORT to the default value for a TorQ Installation
+export KDBBASEPORT=2112 
+Note that this method differs from that demonstrated in the video below (as of Aug 2018, the setenv.sh script is used to define the baseport rather than the start_torq_demo.sh script)
+
+We are now ready to start the TorQ stack by running the command shown below:
+
+
+
+smcginn@homer:~/tmp/deploy$ sh start_torq_demo.sh 
+Starting discovery proc...  
+Starting tp...  
+Starting rdb...  
+Starting ctp...  
+Starting hdb1...
+Starting hdb2...  
+Starting gw...  
+Starting monitor...  
+Starting reporter...
+Starting housekeeping proc...  
+Starting sorting proc...  
+Starting wdb...
+Starting compression proc...  
+Starting feed...  
+Starting iexfeed...  
+Starting sort worker-1...
+Starting sort worker-2...
+Stating metrics...  
+We can now check that data is coming through to our RDB by connecting to it using qcon (the RDB is found on the port number equal to your baseport offset by +2, i.e 2114 in the case of this example). Once connected, we can run simple counts of the tables to see that the data is updating in real time:
+
+ 
+
+
+
+qcon :2114:admin:admin 
+
+
+:2114>tables[]!count each value each tables[] 
+heartbeat| 0 
+logmsg   | 0 
+quote    | 7616 
+quote_iex| 76 
+trade    | 1404
+trade_iex| 76
+
+:2114>tables[]!count each value each tables[] 
+heartbeat| 0 
+logmsg   | 0 
+quote    | 7726 
+quote_iex| 78 
+trade    | 1417 
+trade_iex| 78 
+ 
+
+Note that some differences in the tables present in the RDB may be found between your TorQ setup and those indicated in the video - this is due to updates since the time of recording of the video demonstration.
+
+We are now ready to write our subscriber script.
+
+Writing the Real-Time-Subscriber Script
+Move to the deploy folder and create a new subscriber.q script
+
+Defining the Schema
+Our first line in our script should create an empty table for our average bids. This will define our table schema as well as give us a place to populate with our quote data updates. We also need to correctly define the datatypes for our fields (also note that it is always good practice to add comments to explain your script as you work):
+
+
+
+// define a table to store the intermediate data
+avgbids:([sym:`symbol$();time:`timestamp$()] sumbid:`float$();countbid:`long$()) 
+As we are calculating an average, we will need to have a column for the sum of the bids as well as a count of the bids.
+
+Note that the table needs to be keyed on time and sym, as we are finding the average by sym and time.
+
+Opening Handle to TP
+Our next step is to open a handle to our tickerplant (port 2112). We can also add an error trap that will trigger if the connection to our tickerplant fails:
+
+
+
+// open a handle to the tickerplant
+h:@[hopen;`::2112:admin:admin;{-2"failed to connect to tickerplant"; exit 1}]
+Subscribing to Tickerplant
+At this point we can write the code for subscribing to our tickerplant:
+
+
+
+h(`.u.sub;`quote;`) 
+The .u.sub function is defined in the tickerplant already, so we do not need to change its definition in anyway, but we do need to pass it the appropriate arguments. .u.sub takes two arguments:
+
+list of tables to subscribe to (in this case, only the quote table is required)
+
+list of syms to subscribe to (left as a single backtick to subscribe to all available syms).
+
+The .u.sub function will attempt to call the upd function, as updates come through; however, this is not defined in our script yet. This would cause a constant stream of 'upd errors, as .u.sub is attempting to call a function, upd which does not exist yet.
+
+Defining upd Function
+Now we want to define a upd function that will be called by .u.sub when any quote data updates come through. This upd function will take two arguments:
+
+t, the table name
+
+x, the actual data from the update
+
+This function can be seen below:
+
+
+
+upd:{[t;x] 
+ if[t=`quote; 
+  avgbids::avgbids + select sumbid:sum bid,countbid:count bid by sym,0D00:00:01 xbar time from x]; 
+ } 
+Although we have only subscribed to quote data from the feed (`.u.sub;`quote;`), it would still be common practice to include an if statement that isolates the case where t=quote in our upd function. The function uses a plus join and assigns a global variable (as the update to the table will need to be valid outside of the function) for avgbids. This means that any time an update for the quote table comes through, for a given second and sym, we are adding on to our sumbid and countbid columns. You may notice that we are not actually calculating the average as part of the upd function, the reasons for this are explained in the following section.
+
+Pivot table
+Rather than unnecessarily calculating the average on every update that comes through, we would ideally like to define a function that a client can easily use to calculate the averages for the syms they are interested in at a given point in time; this offers much more flexibility than just returning the average bids of all syms. To do this we will define a function that will return a pivot table. This table should have seconds as its keyed column and the desired syms as the remaining fields.
+
+The function we will define, getpivot, should be monadic and accept an argument s, which will be the list of syms:
+
+
+
+getpivot:{[s] 
+ exec (asc exec distinct sym from ft)#(sym!bid) by 
+  time:time from 
+  ft:select time,sym,bid:sumbid%countbid 
+     from avgbids 
+     where sym in s 
+ } 
+The script is now finished! When we load our script into a q session, we can use tables[] to see that our schema is loaded correctly. We can also type getpivot to make sure our function has loaded properly.
+
+
+
+smcginn@homer:~/tmp/deploy$ q subscriber.q 
+KDB+ 3.5 2017.11.30 Copyright (C) 1993-2017 Kx Systems 
+l64/ 8()core 16048MB smcginn homer.aquaq.co.uk 127.0.1.1 EXPIRE 2019.06.30 AquaQ
+
+q) 
+
+
+q)getpivot
+{[s]
+ exec (asc exec distinct sym from ft)#(sym!bid) by
+  time:time from
+  ft:select time,sym,bid:sumbid%countbid
+     from avgbids
+     where sym in s
+ }
+To test the function works, we can supply getpivot with the sym list `AAPL`IBM. This would produce the table shown below, or similar, as an output.
+
+
+
+q)getpivot`IBM`AAPL 
+time                         | AAPL     IBM
+-----------------------------| ----------------- 
+2018.08.06D10:00:34.000000000| 84.362   40.51857 
+2018.08.06D10:00:35.000000000| 84.885   40.29333
+2018.08.06D10:00:36.000000000| 84.46714 40.52667 
+2018.08.06D10:00:37.000000000| 85.08667 
+2018.08.06D10:00:38.000000000| 84.80333 39.93
+2018.08.06D10:00:39.000000000| 84.975   40.52727 
+2018.08.06D10:00:41.000000000| 84.9275  40.51 
+2018.08.06D10:00:44.000000000| 84.6775  40.19333
+2018.08.06D10:00:45.000000000| 84.44857 40.198 
+2018.08.06D10:00:46.000000000| 84.36 
+2018.08.06D10:00:47.000000000| 84.70667 40.2925
+2018.08.06D10:00:48.000000000| 84.73333 40.27 
+2018.08.06D10:00:49.000000000| 85.23    40.015 
+2018.08.06D10:00:50.000000000| 84.6675  40.04105
+2018.08.06D10:00:51.000000000| 84.43286 40.21333 
+2018.08.06D10:00:52.000000000| 84.559   39.8675 
+2018.08.06D10:00:53.000000000| 84.4525  39.99167
+2018.08.06D10:00:54.000000000| 84.5825  40.045 
+Video Tutorial
+The video below follows the exact same requirements as above and makes use of the same supporting script. Principles covered include:
+
+Defining a table to cache values locally
+
+Connecting to a tickerplant
+
+Defining the upd function
+
+Subscribing
+
+Testing and debugging
+
+Defining a function to serve results
+
+Disaster recover and fault tolerance considerations
+
+https://player.vimeo.com/video/182976072?color=098b43&title=0&byline=0&portrait=0 
+
+
+
+
