@@ -15,5 +15,5 @@ Each folder contains a README.md file explaining the objectives and progress on 
 
 The following project roadmap highlights our progress to date. This can updated as the project progresses.
 
-![Project Roadmap](Project_Roadmap.png)
+![Project Roadmap](Images/Project_Roadmap.png)
 
