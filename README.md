@@ -9,9 +9,11 @@ Our research into KDB.AI can be divided into three main sections:
 * Time Series
 * TorQ Bot
 
+Each folder contains a README.md file explaining the objectives and progress on each area. 
 
+## Project Roadmap
 
-## Roadmap
+The following project roadmap highlights are progress to date. This can updated as the project progresses.
 
 ![Project Roadmap](Project_Roadmap.png)
 
