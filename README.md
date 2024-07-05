@@ -1,3 +1,3 @@
 # Research into KX's vector database KDB.AI.
 
-A repository to store the work people have done using KDB.AI. 
+This is a repository to store Data Intellect's work using KDB.AI. The setup and prerequisites for this work along with the initial use-cases that our research is built on can be found in the [kdbai-samples repo](https://github.com/KxSystems/kdbai-samples/tree/main).
