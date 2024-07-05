@@ -13,5 +13,5 @@ Our research into KDB.AI can be divided into three main sections:
 
 # Roadmap
 
-![Image showing project roadmap](Roadmap.pdf)
+[Image showing project roadmap](Roadmap.pdf)
 
