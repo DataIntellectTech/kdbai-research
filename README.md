@@ -10,3 +10,8 @@ Our research into KDB.AI can be divided into three main sections:
 * TorQ Bot
 
 
+
+# Roadmap
+
+![Image showing project roadmap](Roadmap.pdf)
+
