@@ -4,6 +4,8 @@ This folder contains the original notebook creating TESS as well as numerous upg
 
 Readers should at this stage be familiar with KDB.AI and OpenAI, however for those unfamiliar with the RAG framework it is essentially a framework that enables LLM's to access relevant data from external knowledge bases, enriching their responses with current and contextually accurate information. For more information on RAG you can check out KX's videos on [youtube](https://www.youtube.com/@KxSystems/featured).
 
+The base version of TESS can be found in the TESS notebook. There are separate notebooks for additional features for TESS such as Chat History, Reranking, Multichunking, and Dynamic Loading. 
+
 It is possible to merge all of these upgrades into a single bot, however this can be very heavy on API calls and cost a lot of money and/or exceed your API rate limits. 
 
 Some features to implement in the future:
