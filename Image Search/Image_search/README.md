@@ -4,4 +4,6 @@ This folder contains the work of Jude Reilly evaluating the accuracy of of KDB.A
 
 You will need to train a neural network to run these notebooks. You can do so with the [COVID_model_training](https://github.com/DataIntellectTech/kdbai-research/blob/main/Image%20Search/Image_search/COVID_model_training.ipynb) notebook.
 
+The data available in this folder has already been split using the [splitter notebook](https://github.com/DataIntellectTech/kdbai-research/blob/main/Image%20Search/Image_search/COVID-data-splitter.ipynb), however this can be used for future datasets. 
+
 For more information checkout [Jude's blog](https://dataintellect.com/blog/kdb-ai-a-breath-of-fresh-air/).
