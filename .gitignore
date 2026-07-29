@@ -1,0 +1,38 @@
+.maestri/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Model files
+*.h5
+*.hdf5
+saved_model/
+
+# Image data
+*.jpg
+*.jpeg
+*.png
+*.gif
+Image Search/Image_search/COVID-images/
+Image Search/Image_search/COVID-train-data/
+Image Search/Image_search/COVID-train-split/
+Image Search/Image Classification/data/
+
+# TorQBot data
+TorQBot/data/*.pdf
+TorQBot/data/*.txt
+!TorQBot/data/personalsettings.txt
+
+# Environment / secrets
+.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
